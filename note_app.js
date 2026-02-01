@@ -55,6 +55,23 @@ while (true) {
         }
         break;
       }
+
+      // Case 3: Read a note by title
+      case "3": {
+        const searchTitle = readline.question("\nEnter note title: ");
+    
+        // Find the note
+        const note = notes.find(n => n.title.toLowerCase() === searchTitle.toLowerCase());
+  
+        if (note) {
+          console.log(`\nTitle: ${note.title}`);
+          console.log(`Body: ${note.body}`);
+          console.log(`Added on: ${note.time_added}`);
+        } else {
+          console.log(`Note with title "${searchTitle}" not found.`);
+        }
+        break;
+      }
   
       // Exit
       case "6":
