@@ -45,7 +45,7 @@ while (true) {
       // List all notes
       case "2": {
         if (notes.length === 0) {
-          console.log("No notes found.");
+          console.log("\nNo notes found.");
         } else {
           for (let i = 0; i < notes.length; i++) {
             console.log(`\n${i + 1}. Title: ${notes[i].title}`);
@@ -68,7 +68,24 @@ while (true) {
           console.log(`Body: ${note.body}`);
           console.log(`Added on: ${note.time_added}`);
         } else {
-          console.log(`Note with title "${searchTitle}" not found.`);
+          console.log(`\nNote with title "${searchTitle}" not found.`);
+        }
+        break;
+      }
+
+      // Case 4: Delete a note by title
+      case "4": {
+        const deleteTitle = readline.question("\nEnter note title: ");
+  
+        // Find the note index
+        const index = notes.findIndex(n => n.title.toLowerCase() === deleteTitle.toLowerCase());
+  
+        if (index !== -1) {
+          notes.splice(index, 1); // Remove the note from the array
+          fs.writeFileSync("notes.json", JSON.stringify(notes, null, 2)); // Save updated array
+          console.log("\nNote deleted successfully!");
+        } else {
+          console.log(`\nNote with title "${deleteTitle}" not found.`);
         }
         break;
       }
@@ -80,6 +97,6 @@ while (true) {
   
       // Invalid input
       default:
-        console.log("Invalid choice. Try again.");
+        console.log("\nInvalid choice. Try again.");
     }
   }
