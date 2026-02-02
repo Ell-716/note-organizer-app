@@ -1,47 +1,48 @@
+const { CONNREFUSED } = require("dns");
+const express = require("express");
 const fs = require("fs");
-const readline = require("readline-sync");
 
-// Load existing notes
-let notes = [];
+const app = express();
+app.use(express.json());
 
-if (fs.existsSync("notes.json")) {
-  const data = fs.readFileSync("notes.json", "utf8");
-  notes = JSON.parse(data);
+// Reusable helper
+function loadNotes() {
+    if (!fs.existsSync("notes.json")) {
+        return [];
+    }
+    const data = fs.readFileSync("notes.json", "utf8");
+    return JSON.parse(data);
 }
 
-// Main menu loop
-while (true) {
-  console.log("\n--- Note Organizer Menu ---");
-  console.log("1. Add a note");
-  console.log("2. List all notes");
-  console.log("3. Read a note (by title)");
-  console.log("4. Delete a note");
-  console.log("5. Update a note");
-  console.log("6. Exit");
+function saveNotes(notes) {
+    fs.writeFileSync("notes.json", JSON.stringify(notes, null, 2));
+}
 
-  const choice = readline.question("Enter your choice: ");
+app.post("/notes", function (req, res) {
+    const { title, body } = req.body;
 
-  switch (choice) {
-    // Add a note
-    case "1": {
-      // Ask user for input
-      const title = readline.question("\nEnter note title: ");
-      const body = readline.question("Enter note body: ");
+    // Basic validation
+    if (!title || !body) {
+        return res.status(400).json({ error: "Title and body are required" });
+    }
 
-      // Create a new note
-      const newNote = {
+    const notes = loadNotes();
+
+    const newNote = {
         title: title,
         body: body,
         time_added: new Date().toISOString()
-      };
+    };
 
-      // Add & save
-      notes.push(newNote);
-      fs.writeFileSync("notes.json", JSON.stringify(notes, null, 2));
-      console.log("\nNote added successfully!");
-      break;
-    }
+    notes.push(newNote);
+    saveNotes(notes);
 
+    res.status(201).json({
+        message: "Note added successfully!",
+        note: newNote
+    });
+});
+    
     // List all notes
     case "2": {
       if (notes.length === 0) {
