@@ -69,7 +69,7 @@ app.get("/notes/:title", (req, res) => {
 });
 
 // Delete a note by title
-app.delete("notes/:title", (req, res) => {
+app.delete("/notes/:title", (req, res) => {
     const title = req.params.title;
 
     const notes = loadNotes();
@@ -129,4 +129,3 @@ app.put("/notes/:title", (req, res) => {
 app.listen(3000, function () {
     console.log('Note Organizer API is listening on port 3000!')
   });
-  
