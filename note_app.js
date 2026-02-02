@@ -49,24 +49,24 @@ app.get("/notes", (req, res) => {
     res.json(notes);
 });
 
-    // Read a note by title
-    case "3": {
-      const searchTitle = readline.question("\nEnter note title: ");
+// Get a single note by title
+app.get("/notes/:title", (req, res) => {
+    const title = req.params.title;
 
-      // Find the note
-      const note = notes.find(
-        n => n.title.toLowerCase() === searchTitle.toLowerCase()
-      );
+    const notes = loadNotes();
 
-      if (note) {
-        console.log(`\nTitle: ${note.title}`);
-        console.log(`Body: ${note.body}`);
-        console.log(`Added on: ${note.time_added}`);
-      } else {
-        console.log(`\nNote with title "${searchTitle}" not found.`);
-      }
-      break;
+    const note = notes.find(
+        n => n.title.toLowerCase() ==== title.toLowerCase()
+    );
+
+    if (!note) {
+        return res.status(404).json({
+            error: `Note with title "${title}" not found`
+        });
     }
+
+    res.json(note);
+});
 
     // Delete a note by title
     case "4": {
