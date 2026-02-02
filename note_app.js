@@ -68,24 +68,30 @@ app.get("/notes/:title", (req, res) => {
     res.json(note);
 });
 
-    // Delete a note by title
-    case "4": {
-      const deleteTitle = readline.question("\nEnter note title: ");
+// Delete a note by title
+app.delete("notes/:title", (req, res) => {
+    const title = req.params.title;
 
-      // Find the note index
-      const index = notes.findIndex(
-        n => n.title.toLowerCase() === deleteTitle.toLowerCase()
-      );
+    const notes = loadNotes();
 
-      if (index !== -1) {
-        notes.splice(index, 1); // Remove the note from the array
-        fs.writeFileSync("notes.json", JSON.stringify(notes, null, 2)); // Save updated array
-        console.log("\nNote deleted successfully!");
-      } else {
-        console.log(`\nNote with title "${deleteTitle}" not found.`);
-      }
-      break;
+    const index = notes.findIndex(
+        n => n.title.toLowerCase() === title.toLowerCase()
+    );
+
+    if (index === -1) {
+        return res.status(404).json({
+            error: `Note with title "${title}" not found`
+        });
     }
+
+    const deleteNote = notes.splice(index, 1) [0];
+    saveNotes(notes);
+
+    res.json({
+        message: "Note deleted successfully!",
+        note:deleteNote
+    });
+});
 
     // Update a note by title
     case "5": {
