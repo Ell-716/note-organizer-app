@@ -93,33 +93,35 @@ app.delete("notes/:title", (req, res) => {
     });
 });
 
-    // Update a note by title
-    case "5": {
-      const updateTitle = readline.question("\nEnter note title: ");
+// Update a note by title
+app.put("/notes/:title", (req, res) => {
+    const title = req.params.title;
+    const { body } = req.body;
 
-      // Find the note
-      const note = notes.find(
-        n => n.title.toLowerCase() === updateTitle.toLowerCase()
-      );
-
-      if (note) {
-        const newBody = readline.question("Enter new note body: ");
-        note.body = newBody; // Update the body, keep time_added unchanged
-        fs.writeFileSync("notes.json", JSON.stringify(notes, null, 2)); // Save updated array
-        console.log("\nNote updated successfully!");
-      } else {
-        console.log(`\nNote with title "${updateTitle}" not found.`);
-      }
-      break;
+    // Validation
+    if (!body) {
+        return res.status(400).json({
+            error: "New note body is required"
+        });
     }
 
-    // Exit
-    case "6":
-      console.log("\nGoodbye!");
-      process.exit(0);
+    const notes = loadNotes();
 
-    // Invalid input
-    default:
-      console.log("\nInvalid choice. Try again.");
-  }
-}
+    const note = notes.find(
+        n => n.title.toLowerCase() === title.toLowerCase()
+    );
+
+    if (!note) {
+        return res.status(404).json({
+            error: `Note with title "${title}" not found`
+        });
+    }
+
+    note.body = body;
+    saveNotes(notes);
+
+    res.json({
+        message: "Note updated successfully!",
+        note:note
+    });
+});
