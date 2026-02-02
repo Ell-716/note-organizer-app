@@ -56,7 +56,7 @@ app.get("/notes/:title", (req, res) => {
     const notes = loadNotes();
 
     const note = notes.find(
-        n => n.title.toLowerCase() ==== title.toLowerCase()
+        n => n.title.toLowerCase() === title.toLowerCase()
     );
 
     if (!note) {
@@ -125,3 +125,8 @@ app.put("/notes/:title", (req, res) => {
         note:note
     });
 });
+
+app.listen(3000, function () {
+    console.log('Note Organizer API is listening on port 3000!')
+  });
+  
