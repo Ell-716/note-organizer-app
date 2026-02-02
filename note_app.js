@@ -1,4 +1,3 @@
-const { CONNREFUSED } = require("dns");
 const express = require("express");
 const fs = require("fs");
 
@@ -18,6 +17,7 @@ function saveNotes(notes) {
     fs.writeFileSync("notes.json", JSON.stringify(notes, null, 2));
 }
 
+// Create a note
 app.post("/notes", function (req, res) {
     const { title, body } = req.body;
 
@@ -42,20 +42,12 @@ app.post("/notes", function (req, res) {
         note: newNote
     });
 });
-    
-    // List all notes
-    case "2": {
-      if (notes.length === 0) {
-        console.log("\nNo notes found.");
-      } else {
-        for (let i = 0; i < notes.length; i++) {
-          console.log(`\n${i + 1}. Title: ${notes[i].title}`);
-          console.log(`   Body: ${notes[i].body}`);
-          console.log(`   Added on: ${notes[i].time_added}\n`);
-        }
-      }
-      break;
-    }
+
+// Get all notes
+app.get("/notes", (req, res) => {
+    const notes = loadNotes();
+    res.json(notes);
+});
 
     // Read a note by title
     case "3": {
