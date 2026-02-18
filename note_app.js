@@ -9,9 +9,17 @@ function loadNotes() {
     if (!fs.existsSync("notes.json")) {
         return [];
     }
-    const data = fs.readFileSync("notes.json", "utf8");
-    return JSON.parse(data);
+
+    try {
+        const data = fs.readFileSync("notes.json", "utf8");
+        return JSON.parse(data);
+    } catch (error) {
+        console.error("Error parsing notes.json. File may be corrupted.");
+
+        return [];
+    }
 }
+
 
 function saveNotes(notes) {
     fs.writeFileSync("notes.json", JSON.stringify(notes, null, 2));
