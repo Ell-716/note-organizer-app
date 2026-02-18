@@ -28,20 +28,21 @@ app.post("/notes", function (req, res) {
 
     const notes = loadNotes();
 
-    // Prevent duplicate titles
-    const exists = notes.some(
-        n => n.title.toLowerCase() === title.toLowerCase()
+    const normalizedTitle = title.trim().toLOwerCase();
+
+    const duplicate = notes.find(
+        n => n.title.trim().toLowerCase() === normalizedTitle
     );
 
-    if (exists) {
+    if (duplicate) {
         return res.status(409).json({
-            error: `A note with title "${title}" already exists`
+            error: `Note with title "${title}" already exists`
         });
     }
 
     const newNote = {
-        title: title,
-        body: body,
+        title: title.trim(),
+        body: body.trim(),
         time_added: new Date().toISOString()
     };
 
