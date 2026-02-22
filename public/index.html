@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Note Organizer</title>
+  <style>
+    body { font-family: Arial; max-width: 600px; margin: 40px auto; }
+    input, textarea { width: 100%; margin: 5px 0; padding: 8px; }
+    button { padding: 8px 12px; margin-top: 5px; }
+    .note { border: 1px solid #ddd; padding: 10px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<h2>Add Note</h2>
+<input id="title" placeholder="Title" />
+<textarea id="body" placeholder="Body"></textarea>
+<button onclick="addNote()">Add</button>
+
+<h2>All Notes</h2>
+<button onclick="loadNotes()">Refresh</button>
+<div id="notes"></div>
+
+<script>
+async function loadNotes() {
+  const res = await fetch("/notes");
+  const notes = await res.json();
+
+  const container = document.getElementById("notes");
+  container.innerHTML = "";
+
+  notes.forEach(note => {
+    const div = document.createElement("div");
+    div.className = "note";
+    div.innerHTML = `
+      <strong>${note.title}</strong>
+      <p>${note.body}</p>
+      <button onclick="deleteNote('${note.title}')">Delete</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+async function addNote() {
+  const title = document.getElementById("title").value;
+  const body = document.getElementById("body").value;
+
+  await fetch("/notes", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title, body })
+  });
+
+  document.getElementById("title").value = "";
+  document.getElementById("body").value = "";
+
+  loadNotes();
+}
+
+async function deleteNote(title) {
+  await fetch(`/notes/${title}`, { method: "DELETE" });
+  loadNotes();
+}
+
+loadNotes();
+</script>
+
+</body>
+</html>

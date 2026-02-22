@@ -5,7 +5,7 @@ const path = require("path");
 const NOTES_FILE = path.join(__dirname, "notes.json");
 
 const app = express();
-app.use(express.json());
+app.use(express.static("public"));
 
 // Reusable helper
 async function loadNotes() {
