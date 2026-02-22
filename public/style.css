@@ -8,7 +8,7 @@
 }
 
 :root {
-  --bg:         #0e0e0e;
+  --bg:         #02023c;
   --surface:    #161616;
   --surface2:   #1f1f1f;
   --border:     #2a2a2a;
@@ -312,7 +312,7 @@ body {
 .modal-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.72);
+  background: #02023c;
   backdrop-filter: blur(5px);
 }
 
