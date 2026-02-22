@@ -10,7 +10,8 @@ Notes are stored in a local JSON file and support full CRUD operations through b
 - **Add Notes**: Create new notes with title and content
 - **Edit Notes**: Update existing note content
 - **Delete Notes**: Remove notes with confirmation
-- **Persistent Storage**: All notes saved to `notes.json`
+- **Image Upload**: Attach images to notes (5MB limit, auto-replaces old images)
+- **Persistent Storage**: All notes and images saved locally
 - **Unique Titles**: Enforces unique note titles (case-insensitive)
 - **Timestamps**: Automatically tracks creation time
 - **Toast Notifications**: User feedback for all actions
@@ -21,6 +22,7 @@ Notes are stored in a local JSON file and support full CRUD operations through b
 **Backend:**
 - Node.js
 - Express
+- Multer (file uploads)
 - File system (`fs.promises`)
 - JSON storage
 
@@ -35,12 +37,14 @@ Notes are stored in a local JSON file and support full CRUD operations through b
 note-organizer-app/
 │
 ├── public/
+│   ├── uploads/          # Auto-generated, stores uploaded images
 │   ├── index.html
 │   ├── app.js
 │   └── style.css
 ├── note_app.js
-├── notes.json
+├── notes.json            # Auto-generated note storage
 ├── package.json
+├── .gitignore
 └── README.md
 ```
 
@@ -103,6 +107,21 @@ curl http://localhost:3000/notes
 curl http://localhost:3000/notes/Shopping
 ```
 
+### 🖼️ Upload Image to Note
+
+**POST** `/notes/:title/image`
+
+```bash
+curl -X POST http://localhost:3000/notes/Shopping/image \
+  -F "image=@/path/to/image.jpg"
+```
+
+**Constraints:**
+- Maximum file size: 5MB
+- Allowed types: Images only (jpg, png, gif, svg, etc.)
+- Uploading a new image replaces the existing one
+- Image is deleted when the note is deleted
+
 ### ✏️ Update a Note
 
 **PUT** `/notes/:title``
@@ -131,15 +150,19 @@ Each note is stored as an object:
 {
   "title": "Shopping",
   "body": "Buy milk and bread",
-  "time_added": "2023-08-01T08:30:00Z"
+  "time_added": "2023-08-01T08:30:00Z",
+  "image": "uploads/note-1738392047234-x7k2m9p.jpg"
 }
 ```
+
+The `image` field is optional and only present when an image has been uploaded.
 
 ## 🎨 UI Features
 
 - **Dark Blue Theme**: Editorial-style interface with `#02023c` background
 - **Modal Dialogs**: Smooth animations for adding/editing notes
 - **Note Cards**: Hover effects with actions (edit/delete)
+- **Image Zones**: Click to upload or replace note images
 - **Empty State**: Helpful message when no notes exist
 - **Keyboard Support**: ESC key to close modals
 
@@ -148,5 +171,7 @@ Each note is stored as an object:
 - Titles are matched **case-insensitively**
 - Duplicate titles are prevented (409 response)
 - Data persists between server restarts
-- `notes.json` is created automatically if it doesn't exist
+- `notes.json` and `public/uploads/` are created automatically if they don't exist
 - Title cannot be changed after creation (only body can be updated)
+- Images are stored with unique filenames to prevent conflicts
+- Old images are automatically deleted when replaced or when a note is deleted
