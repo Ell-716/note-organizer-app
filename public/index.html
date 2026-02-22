@@ -1,69 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Note Organizer</title>
-  <style>
-    body { font-family: Arial; max-width: 600px; margin: 40px auto; }
-    input, textarea { width: 100%; margin: 5px 0; padding: 8px; }
-    button { padding: 8px 12px; margin-top: 5px; }
-    .note { border: 1px solid #ddd; padding: 10px; margin-top: 10px; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notes</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<h2>Add Note</h2>
-<input id="title" placeholder="Title" />
-<textarea id="body" placeholder="Body"></textarea>
-<button onclick="addNote()">Add</button>
+  <div class="app">
 
-<h2>All Notes</h2>
-<button onclick="loadNotes()">Refresh</button>
-<div id="notes"></div>
+    <!-- Header -->
+    <header class="app-header">
+      <h1>Notes</h1>
+      <span class="header-meta" id="headerDate"></span>
+    </header>
 
-<script>
-async function loadNotes() {
-  const res = await fetch("/notes");
-  const notes = await res.json();
+    <!-- Notes list -->
+    <div class="notes-wrapper">
+      <div id="notes" class="notes"></div>
+    </div>
 
-  const container = document.getElementById("notes");
-  container.innerHTML = "";
+    <!-- Footer -->
+    <footer class="app-footer">
+      <span class="footer-count" id="footerCount"></span>
+      <button id="addBtn" class="add-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        New note
+      </button>
+    </footer>
 
-  notes.forEach(note => {
-    const div = document.createElement("div");
-    div.className = "note";
-    div.innerHTML = `
-      <strong>${note.title}</strong>
-      <p>${note.body}</p>
-      <button onclick="deleteNote('${note.title}')">Delete</button>
-    `;
-    container.appendChild(div);
-  });
-}
+  </div>
 
-async function addNote() {
-  const title = document.getElementById("title").value;
-  const body = document.getElementById("body").value;
+  <!-- Modal -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-overlay" id="modalOverlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">New Note</h2>
+        <button class="modal-close" id="cancelNote" aria-label="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
 
-  await fetch("/notes", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title, body })
-  });
+      <div class="field">
+        <label for="noteTitle">Title</label>
+        <input id="noteTitle" type="text" placeholder="Give your note a title..." />
+      </div>
 
-  document.getElementById("title").value = "";
-  document.getElementById("body").value = "";
+      <div class="field">
+        <label for="noteBody">Content</label>
+        <textarea id="noteBody" placeholder="Write something..."></textarea>
+      </div>
 
-  loadNotes();
-}
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelNote2">Cancel</button>
+        <button class="btn-save" id="saveNote">Save note</button>
+      </div>
+    </div>
+  </div>
 
-async function deleteNote(title) {
-  await fetch(`/notes/${title}`, { method: "DELETE" });
-  loadNotes();
-}
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
 
-loadNotes();
-</script>
-
+  <script src="app.js"></script>
 </body>
 </html>
