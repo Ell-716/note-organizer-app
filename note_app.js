@@ -1,42 +1,49 @@
 const express = require("express");
-const fs = require("fs");
+const fs = require("fs").promises;
+const path = require("path");
+
+const NOTES_FILE = path.join(__dirname, "notes.json");
 
 const app = express();
 app.use(express.json());
 
 // Reusable helper
-function loadNotes() {
-    if (!fs.existsSync("notes.json")) {
-        return [];
-    }
-
+async function loadNotes() {
     try {
-        const data = fs.readFileSync("notes.json", "utf8");
+        const data = await fs.readFile(NOTES_FILE, "utf8");
         return JSON.parse(data);
     } catch (error) {
-        console.error("Error parsing notes.json. File may be corrupted.");
+        if (error.code === "ENOENT") {
+            return [];
+        }
 
+        console.error("Error reading or parsing notes.json:", error.message);
         return [];
     }
 }
 
-
-function saveNotes(notes) {
-    fs.writeFileSync("notes.json", JSON.stringify(notes, null, 2));
+async function saveNotes(notes) {
+    await fs.writeFile(
+        NOTES_FILE, 
+        JSON.stringify(notes, null, 2), 
+        "utf8"
+    );
 }
 
 // Create a note
-app.post("/notes", function (req, res) {
+app.post("/notes", async (req, res) =>{
     const { title, body } = req.body;
 
     // Basic validation
     if (!title || !body) {
-        return res.status(400).json({ error: "Title and body are required" });
+        return res.status(400).json({ 
+            error: "Title and body are required" 
+        });
     }
 
-    const notes = loadNotes();
+    const notes = await loadNotes();
 
-    const normalizedTitle = title.trim().toLOwerCase();
+    const normalizedTitle = title.trim().toLowerCase();
 
     const duplicate = notes.find(
         n => n.title.trim().toLowerCase() === normalizedTitle
@@ -55,7 +62,7 @@ app.post("/notes", function (req, res) {
     };
 
     notes.push(newNote);
-    saveNotes(notes);
+    await saveNotes(notes);
 
     res.status(201).json({
         message: "Note added successfully!",
@@ -64,16 +71,16 @@ app.post("/notes", function (req, res) {
 });
 
 // Get all notes
-app.get("/notes", (req, res) => {
-    const notes = loadNotes();
+app.get("/notes", async (req, res) => {
+    const notes = await loadNotes();
     res.json(notes);
 });
 
 // Get a single note by title
-app.get("/notes/:title", (req, res) => {
+app.get("/notes/:title", async (req, res) => {
     const title = req.params.title;
 
-    const notes = loadNotes();
+    const notes = await loadNotes();
 
     const note = notes.find(
         n => n.title.toLowerCase() === title.toLowerCase()
@@ -89,10 +96,10 @@ app.get("/notes/:title", (req, res) => {
 });
 
 // Delete a note by title
-app.delete("/notes/:title", (req, res) => {
+app.delete("/notes/:title", async (req, res) => {
     const title = req.params.title;
 
-    const notes = loadNotes();
+    const notes = await loadNotes();
 
     const index = notes.findIndex(
         n => n.title.toLowerCase() === title.toLowerCase()
@@ -104,8 +111,8 @@ app.delete("/notes/:title", (req, res) => {
         });
     }
 
-    const deleteNote = notes.splice(index, 1) [0];
-    saveNotes(notes);
+    const deleteNote = notes.splice(index, 1)[0];
+    await saveNotes(notes);
 
     res.json({
         message: "Note deleted successfully!",
@@ -114,7 +121,7 @@ app.delete("/notes/:title", (req, res) => {
 });
 
 // Update a note by title
-app.put("/notes/:title", (req, res) => {
+app.put("/notes/:title", async (req, res) => {
     const title = req.params.title;
     const { body } = req.body;
 
@@ -125,7 +132,7 @@ app.put("/notes/:title", (req, res) => {
         });
     }
 
-    const notes = loadNotes();
+    const notes = await loadNotes();
 
     const note = notes.find(
         n => n.title.toLowerCase() === title.toLowerCase()
@@ -138,7 +145,7 @@ app.put("/notes/:title", (req, res) => {
     }
 
     note.body = body;
-    saveNotes(notes);
+    await saveNotes(notes);
 
     res.json({
         message: "Note updated successfully!",
