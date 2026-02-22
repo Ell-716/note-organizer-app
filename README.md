@@ -1,30 +1,43 @@
-# 🗒️ Note Organizer API
+# 🗒️ Note Organizer App
 
-A simple **Node.js + Express REST API** for managing notes.
-Notes are stored in a local JSON file and support full CRUD operations.
+A full-stack note-taking application with a dark editorial UI. Built with **Node.js + Express** backend and vanilla JavaScript frontend.
 
-This project started as a command-line app and was later refactored into an API.
+Notes are stored in a local JSON file and support full CRUD operations through both a REST API and web interface.
 
 ## ✨ Features
 
-- Add a note
-- List all notes
-- Read a note by title
-- Update a note
-- Delete a note
-- Persistent storage using `notes.json`
+- **Web Interface**: Clean, dark blue editorial theme with modal dialogs
+- **Add Notes**: Create new notes with title and content
+- **Edit Notes**: Update existing note content
+- **Delete Notes**: Remove notes with confirmation
+- **Persistent Storage**: All notes saved to `notes.json`
+- **Unique Titles**: Enforces unique note titles (case-insensitive)
+- **Timestamps**: Automatically tracks creation time
+- **Toast Notifications**: User feedback for all actions
+- **Responsive Design**: Modern UI with smooth animations
 
 ## 🧱 Tech Stack
 
+**Backend:**
 - Node.js
 - Express
-- File system (`fs`)
+- File system (`fs.promises`)
 - JSON storage
 
+**Frontend:**
+- Vanilla JavaScript
+- HTML5
+- CSS3 (custom properties, animations)
+- Fetch API
+
 ## 📁 Project Structure
-```pgsql 
+```
 note-organizer-app/
 │
+├── public/
+│   ├── index.html
+│   ├── app.js
+│   └── style.css
 ├── note_app.js
 ├── notes.json
 ├── package.json
@@ -54,9 +67,13 @@ node note_app.js
 
 You should see:
 
-```csharp
+```
 Note Organizer API is listening on port 3000!
 ```
+
+### 4️⃣ Open the app
+
+Visit **http://localhost:3000** in your browser to use the web interface.
 
 ## 📌 API Endpoints
 
@@ -118,8 +135,18 @@ Each note is stored as an object:
 }
 ```
 
+## 🎨 UI Features
+
+- **Dark Blue Theme**: Editorial-style interface with `#02023c` background
+- **Modal Dialogs**: Smooth animations for adding/editing notes
+- **Note Cards**: Hover effects with actions (edit/delete)
+- **Empty State**: Helpful message when no notes exist
+- **Keyboard Support**: ESC key to close modals
+
 ## 🧠 Notes
 
 - Titles are matched **case-insensitively**
+- Duplicate titles are prevented (409 response)
 - Data persists between server restarts
-- `notes.json` is created automatically if it doesn’t exist
+- `notes.json` is created automatically if it doesn't exist
+- Title cannot be changed after creation (only body can be updated)
