@@ -56,11 +56,14 @@ function formatDate(iso) {
           <span class="note-title">${escapeHtml(note.title)}</span>
           <span class="note-date">${formatDate(note.time_added)}</span>
         </div>
-        <label class="note-img-zone" title="Add image (coming soon)">
-          <input type="file" accept="image/*" disabled style="display:none">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 19.5h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
-          </svg>
+        <label class="note-img-zone" title="${note.image ? 'Change image' : 'Add image'}">
+          <input type="file" accept="image/*" data-title="${escapeHtml(note.title)}" style="display:none">
+          ${note.image
+            ? `<img src="/${escapeHtml(note.image)}" alt="Note image">`
+            : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 19.5h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+              </svg>`
+          }
         </label>
         <div class="note-actions">
           <button class="btn-edit" data-title="${escapeHtml(note.title)}" data-body="${escapeHtml(note.body)}" title="Edit">
@@ -95,6 +98,38 @@ function formatDate(iso) {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         openModal('edit', btn.dataset.title, btn.dataset.body);
+      });
+    });
+
+    // Image upload handlers
+    document.querySelectorAll('.note-img-zone input[type="file"]').forEach(input => {
+      input.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const title = input.dataset.title;
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+          const res = await fetch(`/notes/${encodeURIComponent(title)}/image`, {
+            method: 'POST',
+            body: formData
+          });
+          const data = await res.json();
+
+          if (!res.ok) {
+            showToast(data.error, 'error');
+            return;
+          }
+
+          showToast('Image uploaded');
+          loadAndRender();
+        } catch (error) {
+          showToast('Upload failed', 'error');
+        }
+
+        e.target.value = '';
       });
     });
   }

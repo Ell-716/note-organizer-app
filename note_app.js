@@ -3,6 +3,37 @@ const fs = require("fs").promises;
 const path = require("path");
 
 const NOTES_FILE = path.join(__dirname, "notes.json");
+const multer = require("multer");
+const UPLOADS_DIR = path.join(__dirname, "public", "uploads");
+
+// Ensure uploads directory exists
+async function ensureUploadsDir() {
+    try {
+        await fs.access(UPLOADS_DIR);
+    } catch {
+        await fs.mkdir(UPLOADS_DIR, { recursive: true });
+    }
+}
+
+// Multer config with unique filenames
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+        cb(null, `note-${uniqueSuffix}${path.extname(file.originalname)}`);
+    }
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: (req, file, cb) => {
+        if (!file.mimetype.startsWith('image/')) {
+            return cb(new Error('Only image files are allowed'), false);
+        }
+        cb(null, true);
+    }
+});
 
 const app = express();
 app.use(express.json());
@@ -96,6 +127,33 @@ app.get("/notes/:title", async (req, res) => {
     res.json(note);
 });
 
+// Upload image for a note
+app.post("/notes/:title/image", upload.single('image'), async (req, res) => {
+    const title = req.params.title;
+
+    if (!req.file) {
+        return res.status(400).json({ error: "No image file provided" });
+    }
+
+    const notes = await loadNotes();
+    const note = notes.find(n => n.title.toLowerCase() === title.toLowerCase());
+
+    if (!note) {
+        await fs.unlink(req.file.path).catch(() => {});
+        return res.status(404).json({ error: `Note with title "${title}" not found` });
+    }
+
+    // Delete old image if exists
+    if (note.image) {
+        await fs.unlink(path.join(__dirname, "public", note.image)).catch(() => {});
+    }
+
+    note.image = `uploads/${req.file.filename}`;
+    await saveNotes(notes);
+
+    res.json({ message: "Image uploaded successfully", note });
+});
+
 // Delete a note by title
 app.delete("/notes/:title", async (req, res) => {
     const title = req.params.title;
@@ -113,6 +171,12 @@ app.delete("/notes/:title", async (req, res) => {
     }
 
     const deleteNote = notes.splice(index, 1)[0];
+
+    // Delete image if exists
+    if (deleteNote.image) {
+        await fs.unlink(path.join(__dirname, "public", deleteNote.image)).catch(() => {});
+    }
+
     await saveNotes(notes);
 
     res.json({
@@ -154,6 +218,20 @@ app.put("/notes/:title", async (req, res) => {
     });
 });
 
-app.listen(3000, function () {
+// Error handler for multer
+app.use((error, req, res, next) => {
+    if (error instanceof multer.MulterError) {
+        if (error.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: 'File too large. Maximum size is 5MB' });
+        }
+        return res.status(400).json({ error: error.message });
+    } else if (error) {
+        return res.status(400).json({ error: error.message });
+    }
+    next();
+});
+
+app.listen(3000, async function () {
+    await ensureUploadsDir();
     console.log('Note Organizer API is listening on port 3000!')
   });

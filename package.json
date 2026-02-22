@@ -1,9 +1,9 @@
 {
     "dependencies": {
-      "express": "^5.2.1",
-      "fs": "^0.0.1-security",
-      "prompt-sync": "^4.2.0",
-      "readline-sync": "^1.4.10"
+        "express": "^5.2.1",
+        "fs": "^0.0.1-security",
+        "multer": "^2.0.2",
+        "prompt-sync": "^4.2.0",
+        "readline-sync": "^1.4.10"
     }
-  }
-  
+}

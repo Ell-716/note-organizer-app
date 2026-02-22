@@ -207,6 +207,22 @@ body {
   display: block;
 }
 
+/* Filled image zone */
+.note-img-zone:has(img) {
+  border: 1.5px solid var(--accent-dim);
+  border-style: solid;
+  padding: 0;
+}
+
+.note-img-zone:has(img):hover {
+  border-color: var(--accent);
+  background: none;
+}
+
+.note-img-zone:has(img) svg {
+  display: none;
+}
+
 /* Action buttons */
 .note-actions {
   display: flex;
